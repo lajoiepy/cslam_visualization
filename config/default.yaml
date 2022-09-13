@@ -1,4 +1,4 @@
 /**:
   ros__parameters:
-    nb_colors: 1
+    nb_colors: 10
     visualization_update_period_ms: 1000

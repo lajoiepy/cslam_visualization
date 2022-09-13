@@ -37,7 +37,7 @@ class PoseGraphVisualizer():
             print('robot_id: ', robot_id)
             color = self.colors[robot_id % self.nb_colors]
             marker = Marker()
-            marker.header.frame_id = "map"  # TODO: make this the base TF frame of the robot
+            marker.header.frame_id = "robot" + str(pose_graph.origin_robot_id) + "_map"
             marker.header.stamp = rclpy.time.Time().to_msg()
             marker.ns = "poses"
             marker.id = robot_id
@@ -59,7 +59,7 @@ class PoseGraphVisualizer():
         for robot_id, pose_graph in self.robot_pose_graphs.items():
             color = self.colors[robot_id % self.nb_colors]
             marker = Marker()
-            marker.header.frame_id = "map"  # TODO: make this the base TF frame of the robot
+            marker.header.frame_id = "robot" + str(pose_graph.origin_robot_id) + "_map"
             marker.header.stamp = rclpy.time.Time().to_msg()
             marker.ns = "edges"
             marker.id = robot_id
