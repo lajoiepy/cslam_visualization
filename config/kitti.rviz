@@ -10,6 +10,10 @@ Panels:
         - /TF1
         - /TF1/Frames1
         - /MarkerArray1
+        - /MarkerArray1/Topic1
+        - /MarkerArray2
+        - /MarkerArray2/Status1
+        - /MarkerArray2/Topic1
       Splitter Ratio: 0.5
     Tree Height: 617
   - Class: rviz_common/Selection
@@ -52,22 +56,38 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        camera_gray_left:
+          Value: true
+        camera_link:
+          Value: true
+        odom:
+          Value: true
+        robot0_current_pose:
+          Value: true
+        robot0_latest_optimized_pose:
+          Value: true
         robot0_map:
+          Value: true
+        robot1_current_pose:
+          Value: true
+        robot1_latest_optimized_pose:
           Value: true
         robot1_map:
           Value: true
-        robot2_map:
-          Value: true
-      Marker Scale: 200
+      Marker Scale: 20
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
         robot0_map:
+          robot0_latest_optimized_pose:
+            robot0_current_pose:
+              {}
+          robot1_latest_optimized_pose:
+            robot1_current_pose:
+              {}
           robot1_map:
-            {}
-          robot2_map:
             {}
       Update Interval: 0
       Value: true
@@ -80,9 +100,21 @@ Visualization Manager:
       Topic:
         Depth: 5
         Durability Policy: Volatile
-        History Policy: Keep Last
+        History Policy: Keep All
         Reliability Policy: Reliable
         Value: /viz/pose_graph_markers
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        keypoints: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep All
+        Reliability Policy: Reliable
+        Value: /viz/keypoints_markers
       Value: true
   Enabled: true
   Global Options:
@@ -127,25 +159,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 767.3841552734375
+      Distance: 79.01985168457031
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 200
+        X: 0.5538597106933594
+        Y: -0.237030029296875
+        Z: 0.228668212890625
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.020398303866386414
+      Pitch: -1.0706506967544556
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.555397391319275
+      Yaw: 1.597771167755127
     Saved:
       - Class: rviz_default_plugins/Orbit
         Distance: 1176.14990234375

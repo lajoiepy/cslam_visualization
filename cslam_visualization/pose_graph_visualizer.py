@@ -5,7 +5,6 @@ from cslam_common_interfaces.msg import PoseGraph
 from visualization_msgs.msg import MarkerArray, Marker
 from distinctipy import distinctipy
 
-
 class PoseGraphVisualizer():
 
     def __init__(self, node, params):
@@ -34,7 +33,6 @@ class PoseGraphVisualizer():
 
         # Nodes (poses)
         for robot_id, pose_graph in self.robot_pose_graphs.items():
-            print('robot_id: ', robot_id)
             color = self.colors[robot_id % self.nb_colors]
             marker = Marker()
             marker.header.frame_id = "robot" + str(pose_graph.origin_robot_id) + "_map"
@@ -70,7 +68,7 @@ class PoseGraphVisualizer():
             marker.color.g = color[1]
             marker.color.b = color[2]
             marker.color.a = 1.0
-            marker.frame_locked = True
+            marker.frame_locked = False
             for edge in pose_graph.edges:
                 if edge.key_from.robot_id in self.robot_pose_graphs and edge.key_to.robot_id in self.robot_pose_graphs:
                     if edge.key_from.keyframe_id < len(
