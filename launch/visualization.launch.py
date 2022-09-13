@@ -10,13 +10,14 @@ from launch_ros.actions import Node
 
 
 def launch_setup(context, *args, **kwargs):
+
     visualization_node = Node(package='cslam_visualization',
                                executable='visualization_node.py',
                                name='cslam_visualization',
-                               parameters=[])
-    
-    # TODO: launch RVIZ2 with custom config file
+                               parameters=[LaunchConfiguration('config')])
 
+    # TODO: launch RVIZ2 with custom config file
+    
     return [
         visualization_node,
     ]
@@ -25,5 +26,19 @@ def launch_setup(context, *args, **kwargs):
 def generate_launch_description():
 
     return LaunchDescription([
+        DeclareLaunchArgument('config_path',
+                              default_value=os.path.join(
+                                  get_package_share_directory('cslam_visualization'),
+                                  'config/'),
+                              description=''),
+        DeclareLaunchArgument('config_file',
+                              default_value='default.yaml',
+                              description=''),
+        DeclareLaunchArgument('config',
+                              default_value=[
+                                  LaunchConfiguration('config_path'),
+                                  LaunchConfiguration('config_file')
+                              ],
+                              description=''),
         OpaqueFunction(function=launch_setup)
     ])

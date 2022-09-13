@@ -6,24 +6,25 @@ from visualization_msgs.msg import MarkerArray, Marker
 from distinctipy import distinctipy
 
 
-class PoseGraphVisualizer(Node):
+class PoseGraphVisualizer():
 
-    def __init__(self):
-        super().__init__('pose_graph_visualizer')
-        self.pose_graph_markers_publisher = self.create_publisher(
+    def __init__(self, node, params):
+        self.node = node
+        self.params = params
+        self.pose_graph_markers_publisher = self.node.create_publisher(
             MarkerArray, "/viz/pose_graph_markers", 10)
-        self.nb_colors = 10  # TODO: make this a parameter
-        self.visualizer_update_period_ms_ = 100  # TODO: make this a parameter
+        self.nb_colors = self.params["nb_colors"]
+        self.visualizer_update_period_ms_ = self.params["visualization_update_period_ms"]  
         self.colors = distinctipy.get_colors(self.nb_colors)
-        self.pose_graph_subscriber = self.create_subscription(
+        self.pose_graph_subscriber = self.node.create_subscription(
             PoseGraph, '/viz/pose_graph', self.pose_graph_callback, 10)
         self.robot_pose_graphs = {}
-        self.timer = self.create_timer(
+        self.timer = self.node.create_timer(
             self.visualizer_update_period_ms_ / 1000.0,
             self.visualization_callback)
 
     def pose_graph_callback(self, msg):
-        self.get_logger().info('Received pose graph from robot ' +
+        self.node.get_logger().info('Received pose graph from robot ' +
                                str(msg.robot_id))
         self.robot_pose_graphs[msg.robot_id] = msg
 
