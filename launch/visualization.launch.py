@@ -13,7 +13,7 @@ def launch_setup(context, *args, **kwargs):
     visualization_node = Node(package='cslam_visualization',
                                executable='visualization_node.py',
                                name='cslam_visualization',
-                               parameters=[{'nb_robots': LaunchConfiguration('nb_robots')}])
+                               parameters=[])
     
     # TODO: launch RVIZ2 with custom config file
 
@@ -25,6 +25,5 @@ def launch_setup(context, *args, **kwargs):
 def generate_launch_description():
 
     return LaunchDescription([
-        DeclareLaunchArgument('nb_robots', default_value='10', description=''),
         OpaqueFunction(function=launch_setup)
     ])
