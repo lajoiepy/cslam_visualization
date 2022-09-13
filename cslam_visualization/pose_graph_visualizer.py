@@ -65,7 +65,7 @@ class PoseGraphVisualizer():
             marker.id = robot_id
             marker.type = Marker.LINE_LIST
             marker.action = Marker.ADD
-            marker.scale.x = 1.0
+            marker.scale.x = 0.5
             marker.color.r = color[0]
             marker.color.g = color[1]
             marker.color.b = color[2]
