@@ -5,6 +5,7 @@ from rclpy.node import Node
 from cslam_common_interfaces.msg import PoseGraph
 from cslam_visualization.pose_graph_visualizer import PoseGraphVisualizer
 from cslam_visualization.keypoints3d_visualizer import Keypoints3DVisualizer
+from cslam_visualization.pointcloud_visualizer import PointCloudVisualizer
 
 if __name__ == '__main__':
 
@@ -13,14 +14,25 @@ if __name__ == '__main__':
     node.declare_parameters(
             namespace='',
             parameters=[('nb_colors', 10),
-                        ('visualization_update_period_ms', 100)])
+                        ('visualization_update_period_ms', 100),
+                        ('enable_keypoints_visualization', False),
+                        ('enable_pointclouds_visualization', False)])
     params = {}
     params['nb_colors'] = node.get_parameter(
         'nb_colors').value
     params['visualization_update_period_ms'] = node.get_parameter(
         'visualization_update_period_ms').value
+    params['enable_keypoints_visualization'] = node.get_parameter(
+        'enable_keypoints_visualization').value
+    params['enable_pointclouds_visualization'] = node.get_parameter(
+        'enable_pointclouds_visualization').value
     pose_graph_viz = PoseGraphVisualizer(node, params)
-    keypoints_viz = Keypoints3DVisualizer(node, params, pose_graph_viz)
+    keypoints_viz = []
+    if params['enable_keypoints_visualization']:
+        keypoints_viz = Keypoints3DVisualizer(node, params, pose_graph_viz)
+    pointcloud_viz = []
+    if params['enable_pointclouds_visualization']:
+        pointcloud_viz = PointCloudVisualizer(node, params, pose_graph_viz)
     node.get_logger().info('Initialization done.')
     rclpy.spin(node)
     rclpy.shutdown()

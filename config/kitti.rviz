@@ -12,8 +12,9 @@ Panels:
         - /MarkerArray1
         - /MarkerArray1/Topic1
         - /MarkerArray2
-        - /MarkerArray2/Status1
         - /MarkerArray2/Topic1
+        - /PointCloud21
+        - /PointCloud21/Topic1
       Splitter Ratio: 0.5
     Tree Height: 617
   - Class: rviz_common/Selection
@@ -60,7 +61,7 @@ Visualization Manager:
           Value: true
         camera_link:
           Value: true
-        odom:
+        map:
           Value: true
         robot0_current_pose:
           Value: true
@@ -74,6 +75,8 @@ Visualization Manager:
           Value: true
         robot1_map:
           Value: true
+        world:
+          Value: true
       Marker Scale: 20
       Name: TF
       Show Arrows: true
@@ -84,11 +87,6 @@ Visualization Manager:
           robot0_latest_optimized_pose:
             robot0_current_pose:
               {}
-          robot1_latest_optimized_pose:
-            robot1_current_pose:
-              {}
-          robot1_map:
-            {}
       Update Interval: 0
       Value: true
     - Class: rviz_default_plugins/MarkerArray
@@ -108,13 +106,46 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        keypoints: true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep All
         Reliability Policy: Reliable
         Value: /viz/keypoints_markers
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: ""
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: PointCloud2
+      Position Transformer: ""
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep All
+        Reliability Policy: Reliable
+        Value: /viz/pose_pointcloud
+      Use Fixed Frame: true
+      Use rainbow: true
       Value: true
   Enabled: true
   Global Options:

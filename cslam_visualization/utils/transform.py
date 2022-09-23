@@ -6,7 +6,9 @@
 #  -> matrices de transformations entre repères à partir d'une pose 3D
 # utilisant le module numpy
 #
-###############################################################################
+###############################################################################+
+
+# Modified by Pierre-Yves Lajoie
 
 ###############################################################################
 # Chargement des modules standards
@@ -14,6 +16,7 @@
 import numpy as np
 import quaternion
 import math
+from geometry_msgs.msg import Transform as TransformMsg
 ###############################################################################
 
 ###############################################################################
@@ -106,6 +109,17 @@ class Transform:
         else:
             return self.matrix.dot(pt)
 
+    def to_msg(self):
+        u"""Conversion en message ROS."""
+        msg = TransformMsg()
+        msg.translation.x = self.matrix[0, 3]
+        msg.translation.y = self.matrix[1, 3]
+        msg.translation.z = self.matrix[2, 3]
+        msg.rotation.x = self.quaternion().x
+        msg.rotation.y = self.quaternion().y
+        msg.rotation.z = self.quaternion().z
+        msg.rotation.w = self.quaternion().w
+        return msg
 
 def rotation_matrix(axe, angle):
     u"""Génére une matrice de rotation depuis un axe ('x','y' ou 'z') et un angle."""

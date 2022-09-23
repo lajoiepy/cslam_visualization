@@ -18,14 +18,20 @@ class PoseGraphVisualizer():
         self.pose_graph_subscriber = self.node.create_subscription(
             PoseGraph, '/viz/pose_graph', self.pose_graph_callback, 10)
         self.robot_pose_graphs = {}
+        self.robot_pose_graphs_edges = {}
+        self.origin_robot_ids = {}
         self.timer = self.node.create_timer(
             self.visualizer_update_period_ms_ / 1000.0,
             self.visualization_callback)
 
     def pose_graph_callback(self, msg):
-        self.node.get_logger().info('Received pose graph from robot ' +
-                               str(msg.robot_id))
-        self.robot_pose_graphs[msg.robot_id] = msg
+        self.origin_robot_ids[msg.robot_id] = msg.origin_robot_id
+        if msg.robot_id not in self.robot_pose_graphs:
+            self.robot_pose_graphs[msg.robot_id] = {}
+
+        for pose in msg.values:
+            self.robot_pose_graphs[msg.robot_id][pose.key.keyframe_id] = pose
+        self.robot_pose_graphs_edges[msg.robot_id] = msg.edges
 
     def robot_pose_graphs_to_marker_array(self):
         """Converts a PoseGraph messages to a MarkerArray message"""
@@ -35,7 +41,7 @@ class PoseGraphVisualizer():
         for robot_id, pose_graph in self.robot_pose_graphs.items():
             color = self.colors[robot_id % self.nb_colors]
             marker = Marker()
-            marker.header.frame_id = "robot" + str(pose_graph.origin_robot_id) + "_map"
+            marker.header.frame_id = "robot" + str(self.origin_robot_ids[robot_id]) + "_map"
             marker.header.stamp = rclpy.time.Time().to_msg()
             marker.ns = "poses"
             marker.id = robot_id
@@ -49,7 +55,7 @@ class PoseGraphVisualizer():
             marker.color.b = color[2]
             marker.color.a = 1.0
             marker.frame_locked = True
-            for node in pose_graph.values:
+            for key, node in pose_graph.items():
                 marker.points.append(node.pose.position)
             marker_array.markers.append(marker)
 
@@ -57,7 +63,7 @@ class PoseGraphVisualizer():
         for robot_id, pose_graph in self.robot_pose_graphs.items():
             color = self.colors[robot_id % self.nb_colors]
             marker = Marker()
-            marker.header.frame_id = "robot" + str(pose_graph.origin_robot_id) + "_map"
+            marker.header.frame_id = "robot" + str(self.origin_robot_ids[robot_id]) + "_map"
             marker.header.stamp = rclpy.time.Time().to_msg()
             marker.ns = "edges"
             marker.id = robot_id
@@ -69,19 +75,13 @@ class PoseGraphVisualizer():
             marker.color.b = color[2]
             marker.color.a = 1.0
             marker.frame_locked = False
-            for edge in pose_graph.edges:
+            for edge in self.robot_pose_graphs_edges[robot_id]:
                 if edge.key_from.robot_id in self.robot_pose_graphs and edge.key_to.robot_id in self.robot_pose_graphs:
-                    if edge.key_from.keyframe_id < len(
-                            self.robot_pose_graphs[edge.key_from.robot_id].
-                            values) and edge.key_to.keyframe_id < len(
-                                self.robot_pose_graphs[
-                                    edge.key_to.robot_id].values):
+                    if edge.key_from.keyframe_id in self.robot_pose_graphs[edge.key_from.robot_id] and edge.key_to.keyframe_id in self.robot_pose_graphs[edge.key_to.robot_id]:
                         marker.points.append(
-                            self.robot_pose_graphs[edge.key_from.robot_id].
-                            values[edge.key_from.keyframe_id].pose.position)
+                            self.robot_pose_graphs[edge.key_from.robot_id][edge.key_from.keyframe_id].pose.position)
                         marker.points.append(
-                            self.robot_pose_graphs[edge.key_to.robot_id].
-                            values[edge.key_to.keyframe_id].pose.position)
+                            self.robot_pose_graphs[edge.key_to.robot_id][edge.key_to.keyframe_id].pose.position)
             marker_array.markers.append(marker)
 
         return marker_array

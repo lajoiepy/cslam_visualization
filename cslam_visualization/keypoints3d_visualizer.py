@@ -29,8 +29,6 @@ class Keypoints3DVisualizer():
         self.previous_poses = {}
 
     def local_descriptors_callback(self, msg):
-        self.node.get_logger().info('Received local descriptors from robot ' +
-                               str(msg.robot_id))
         if msg.robot_id not in self.local_descriptors:
             self.local_descriptors[msg.robot_id] = []
         self.local_descriptors[msg.robot_id].append(msg)
@@ -47,10 +45,10 @@ class Keypoints3DVisualizer():
     def check_exists_or_new(self, robot_id, keyframe_id):
         if robot_id not in self.previous_poses:
             return True
-        if keyframe_id >= len(self.previous_poses[robot_id].values):
+        if keyframe_id not in self.previous_poses[robot_id]:
             return True
-        new = self.pose_graph_viz.robot_pose_graphs[robot_id].values[keyframe_id].pose.position
-        previous = self.previous_poses[robot_id].values[keyframe_id].pose.position
+        new = self.pose_graph_viz.robot_pose_graphs[robot_id][keyframe_id].pose.position
+        previous = self.previous_poses[robot_id][keyframe_id].pose.position
         dist = np.linalg.norm([new.x-previous.x, new.y-previous.y, new.z-previous.z])
         if dist > 1e-1:
             return True
@@ -67,7 +65,7 @@ class Keypoints3DVisualizer():
                     if self.check_exists_or_new(robot_id, keypoints.image_id):
                         color = self.pose_graph_viz.colors[robot_id % self.pose_graph_viz.nb_colors]
                         marker = Marker()
-                        marker.header.frame_id = "robot" + str(self.pose_graph_viz.robot_pose_graphs[robot_id].origin_robot_id) + "_map"
+                        marker.header.frame_id = "robot" + str(self.pose_graph_viz.origin_robot_ids[robot_id]) + "_map"
                         marker.header.stamp = rclpy.time.Time().to_msg()
                         marker.ns = "keypoints_robot" + str(robot_id)
                         marker.id = keypoints.image_id
@@ -82,10 +80,10 @@ class Keypoints3DVisualizer():
                         marker.color.a = 1.0
                         marker.frame_locked = False
                         for kp in keypoints.data.points:
-                            if keypoints.image_id < len(self.pose_graph_viz.robot_pose_graphs[robot_id].values): 
+                            if keypoints.image_id in self.pose_graph_viz.robot_pose_graphs[robot_id]: 
                                 if not math.isnan(kp.x) and not math.isnan(kp.y) and not math.isnan(kp.z):                  
                                     # Offset by pose
-                                    t = self.pose_to_transform(self.pose_graph_viz.robot_pose_graphs[robot_id].values[keypoints.image_id].pose)
+                                    t = self.pose_to_transform(self.pose_graph_viz.robot_pose_graphs[robot_id][keypoints.image_id].pose)
                                     a_kp = self.point_to_array(kp)
                                     proj = t.projection(a_kp)
                                     p = Point()
@@ -100,5 +98,4 @@ class Keypoints3DVisualizer():
 
     def visualization_callback(self):
         marker_array = self.keypoints_to_marker_array()
-        self.node.get_logger().info("Send feature markers " + str(len(marker_array.markers)))
         self.keypoints_markers_publisher.publish(marker_array)
