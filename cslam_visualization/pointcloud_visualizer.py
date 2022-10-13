@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 import numpy as np
 
-from cslam_common_interfaces.msg import KeyframePointCloud
+from cslam_common_interfaces.msg import VizPointCloud
 from visualization_msgs.msg import MarkerArray, Marker
 from geometry_msgs.msg import Point
 from std_msgs.msg import ColorRGBA
@@ -13,7 +13,7 @@ from sensor_msgs.msg import PointCloud2
 from distinctipy import distinctipy
 import copy
 from tf2_ros import TransformBroadcaster
-from cslam_visualization.utils.point_cloud2 import read_points
+from cslam.utils.point_cloud2 import read_points
 from struct import pack, unpack
 
 class PointCloudVisualizer():
@@ -26,7 +26,7 @@ class PointCloudVisualizer():
             MarkerArray, "/viz/pointcloud_markers", 10)
         self.visualizer_update_period_ms_ = self.params["visualization_update_period_ms"]  
         self.pointclouds_subscriber = self.node.create_subscription(
-            KeyframePointCloud, '/viz/keyframe_pointcloud', self.pointclouds_callback, 10)
+            VizPointCloud, '/viz/keyframe_pointcloud', self.pointclouds_callback, 10)
         self.pointclouds = {}
         self.timer = self.node.create_timer(
             self.visualizer_update_period_ms_ / 1000.0,
