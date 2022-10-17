@@ -62,13 +62,13 @@ class Keypoints3DVisualizer():
         for robot_id, sensor_data in self.local_descriptors.items():
             if robot_id in self.pose_graph_viz.robot_pose_graphs:
                 for keypoints in sensor_data:
-                    if self.check_exists_or_new(robot_id, keypoints.image_id):
+                    if self.check_exists_or_new(robot_id, keypoints.keyframe_id):
                         color = self.pose_graph_viz.colors[robot_id % self.pose_graph_viz.nb_colors]
                         marker = Marker()
                         marker.header.frame_id = "robot" + str(self.pose_graph_viz.origin_robot_ids[robot_id]) + "_map"
                         marker.header.stamp = rclpy.time.Time().to_msg()
                         marker.ns = "keypoints_robot" + str(robot_id)
-                        marker.id = keypoints.image_id
+                        marker.id = keypoints.keyframe_id
                         marker.type = Marker.SPHERE_LIST
                         marker.action = Marker.ADD
                         marker.scale.x = 0.2
@@ -80,10 +80,10 @@ class Keypoints3DVisualizer():
                         marker.color.a = 1.0
                         marker.frame_locked = False
                         for kp in keypoints.data.points:
-                            if keypoints.image_id in self.pose_graph_viz.robot_pose_graphs[robot_id]: 
+                            if keypoints.keyframe_id in self.pose_graph_viz.robot_pose_graphs[robot_id]: 
                                 if not math.isnan(kp.x) and not math.isnan(kp.y) and not math.isnan(kp.z):                  
                                     # Offset by pose
-                                    t = self.pose_to_transform(self.pose_graph_viz.robot_pose_graphs[robot_id][keypoints.image_id].pose)
+                                    t = self.pose_to_transform(self.pose_graph_viz.robot_pose_graphs[robot_id][keypoints.keyframe_id].pose)
                                     a_kp = self.point_to_array(kp)
                                     proj = t.projection(a_kp)
                                     p = Point()
