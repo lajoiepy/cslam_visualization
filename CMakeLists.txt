@@ -113,7 +113,7 @@ SET(Libraries
 )
 
 find_package(cslam_common_interfaces REQUIRED)
-find_package(cslam_loop_detection_interfaces REQUIRED)
+find_package(cslam_common_interfaces REQUIRED)
 
 # add_executable(pose_graph_manager 
 #   src/back_end/decentralized_pgo.cpp
@@ -124,7 +124,7 @@ find_package(cslam_loop_detection_interfaces REQUIRED)
 #   ${${PROJECT_NAME}_EXPORTED_TARGETS})
 # ament_target_dependencies(pose_graph_manager 
 #   ${Libraries}
-#   cslam_common_interfaces cslam_loop_detection_interfaces)
+#   cslam_common_interfaces cslam_common_interfaces)
 # target_link_libraries(pose_graph_manager gtsam)
 # set_target_properties(pose_graph_manager 
 #   PROPERTIES OUTPUT_NAME "pose_graph_manager")

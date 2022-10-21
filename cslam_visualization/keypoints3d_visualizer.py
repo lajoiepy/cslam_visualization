@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 import numpy as np
 
-from cslam_loop_detection_interfaces.msg import LocalImageDescriptors
+from cslam_common_interfaces.msg import LocalImageDescriptors
 from visualization_msgs.msg import MarkerArray, Marker
 from geometry_msgs.msg import Point
 import math
