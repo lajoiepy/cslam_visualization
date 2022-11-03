@@ -41,7 +41,7 @@ def generate_launch_description():
                               default_value='default.yaml',
                               description=''),
         DeclareLaunchArgument('rviz_config_file',
-                              default_value='kitti.rviz',
+                              default_value='kitti_lidar.rviz',
                               description=''),
         DeclareLaunchArgument('config',
                               default_value=[

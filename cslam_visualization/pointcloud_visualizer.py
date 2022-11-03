@@ -62,6 +62,15 @@ class PointCloudVisualizer():
         color.a = 1.0
         return color
 
+    def get_robot_color(self, robot_id):
+        rgb = self.pose_graph_viz.colors[robot_id % self.pose_graph_viz.nb_colors]
+        color = ColorRGBA()
+        color.r = rgb[0] * 0.6
+        color.g = rgb[1] * 0.6
+        color.b = rgb[2] * 0.6
+        color.a = 1.0
+        return color
+
     def pointcloud_to_marker(self, robot_id, keyframe_id, pointcloud):
         """Converts a pointcloud to a marker"""
         marker = Marker()
@@ -69,15 +78,18 @@ class PointCloudVisualizer():
         marker.header.stamp = pointcloud.header.stamp
         marker.type = Marker.POINTS
         marker.action = Marker.ADD
-        marker.scale.x = 0.02
-        marker.scale.y = 0.02
+        marker.scale.x = self.params["voxel_size"]
+        marker.scale.y = self.params["voxel_size"]
         for point in read_points(pointcloud, skip_nans=True):
             pt = Point()
-            pt.x = point[0]
-            pt.y = point[1]
-            pt.z = point[2]
+            pt.x = float(point[0])
+            pt.y = float(point[1])
+            pt.z = float(point[2])
             marker.points.append(pt)
-            marker.colors.append(self.rgb_value_to_color(point[3]))
+            if len(point) == 4:
+                marker.colors.append(self.rgb_value_to_color(point[3]))
+            else:
+                marker.colors.append(self.get_robot_color(robot_id))
         marker.frame_locked = True
         marker.ns = "keypoints_robot" + str(robot_id)
         marker.id = keyframe_id

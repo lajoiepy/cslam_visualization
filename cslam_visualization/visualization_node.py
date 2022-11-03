@@ -16,7 +16,8 @@ if __name__ == '__main__':
             parameters=[('nb_colors', 10),
                         ('visualization_update_period_ms', 100),
                         ('enable_keypoints_visualization', False),
-                        ('enable_pointclouds_visualization', False)])
+                        ('enable_pointclouds_visualization', False),
+                        ('voxel_size', 0.5)])
     params = {}
     params['nb_colors'] = node.get_parameter(
         'nb_colors').value
@@ -26,6 +27,8 @@ if __name__ == '__main__':
         'enable_keypoints_visualization').value
     params['enable_pointclouds_visualization'] = node.get_parameter(
         'enable_pointclouds_visualization').value
+    params['voxel_size'] = node.get_parameter(
+        'voxel_size').value
     pose_graph_viz = PoseGraphVisualizer(node, params)
     keypoints_viz = []
     if params['enable_keypoints_visualization']:
