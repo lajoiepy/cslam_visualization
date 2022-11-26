@@ -38,10 +38,10 @@ def generate_launch_description():
                                   'config/'),
                               description=''),
         DeclareLaunchArgument('config_file',
-                              default_value='default.yaml',
+                              default_value='realsense.yaml',
                               description=''),
         DeclareLaunchArgument('rviz_config_file',
-                              default_value='kitti_lidar.rviz',
+                              default_value='realsense.rviz',
                               description=''),
         DeclareLaunchArgument('config',
                               default_value=[

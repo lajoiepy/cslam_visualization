@@ -15,6 +15,7 @@ import copy
 from tf2_ros import TransformBroadcaster
 from cslam.utils.point_cloud2 import read_points
 from struct import pack, unpack
+import open3d
 
 class PointCloudVisualizer():
 
@@ -23,7 +24,7 @@ class PointCloudVisualizer():
         self.params = params
         self.pose_graph_viz = pose_graph_viz
         self.markers_publisher = self.node.create_publisher(
-            MarkerArray, "/viz/pointcloud_markers", 10)
+            Marker, "/viz/cloudmarker", 10)
         self.visualizer_update_period_ms_ = self.params["visualization_update_period_ms"]  
         self.pointclouds_subscriber = self.node.create_subscription(
             VizPointCloud, '/viz/keyframe_pointcloud', self.pointclouds_callback, 10)
@@ -76,10 +77,12 @@ class PointCloudVisualizer():
         marker = Marker()
         marker.header.frame_id = pointcloud.header.frame_id
         marker.header.stamp = pointcloud.header.stamp
-        marker.type = Marker.POINTS
+        marker.type = Marker.CUBE_LIST #Marker.POINTS
         marker.action = Marker.ADD
-        marker.scale.x = self.params["voxel_size"]
-        marker.scale.y = self.params["voxel_size"]
+        marker.scale.x = 0.2#self.params["voxel_size"]
+        marker.scale.y = 0.2#self.params["voxel_size"]
+        marker.scale.z = 0.2#self.params["voxel_size"]
+
         for point in read_points(pointcloud, skip_nans=True):
             pt = Point()
             pt.x = float(point[0])
@@ -137,11 +140,9 @@ class PointCloudVisualizer():
     def visualization_callback(self):
         self.keyframe_pointcloud_to_pose_pointcloud()
         self.node.get_logger().info("Publishing " + str(len(self.markers_to_publish)) + " pointclouds")
-        marker_array = MarkerArray()
-        for pcl in self.markers_to_publish:
-            marker_array.markers.append(pcl)
-            self.pointclouds_keys_published.add((pcl.ns, pcl.id))
-        self.markers_publisher.publish(marker_array)
+        for pc in self.markers_to_publish:
+            self.pointclouds_keys_published.add((pc.ns, pc.id))
+            self.markers_publisher.publish(pc)
         for tf in self.tfs_to_publish:
             self.tf_broadcaster.sendTransform(tf)
         # TODO: add option or not?
