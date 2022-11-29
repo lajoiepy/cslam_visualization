@@ -17,10 +17,10 @@ class Keypoints3DVisualizer():
         self.params = params
         self.pose_graph_viz = pose_graph_viz
         self.keypoints_markers_publisher = self.node.create_publisher(
-            MarkerArray, "/viz/keypoints_markers", 10)
+            MarkerArray, "/cslam/viz/keypoints_markers", 10)
         self.visualizer_update_period_ms_ = self.params["visualization_update_period_ms"]  
         self.local_descriptors_subscriber = self.node.create_subscription(
-            LocalImageDescriptors, '/viz/local_descriptors', self.local_descriptors_callback, 10)
+            LocalImageDescriptors, '/cslam/viz/local_descriptors', self.local_descriptors_callback, 10)
         self.local_descriptors = {}
         self.timer = self.node.create_timer(
             self.visualizer_update_period_ms_ / 1000.0,

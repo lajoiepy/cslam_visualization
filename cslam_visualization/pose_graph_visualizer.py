@@ -11,12 +11,12 @@ class PoseGraphVisualizer():
         self.node = node
         self.params = params
         self.pose_graph_markers_publisher = self.node.create_publisher(
-            MarkerArray, "/viz/pose_graph_markers", 10)
+            MarkerArray, "/cslam/viz/pose_graph_markers", 10)
         self.nb_colors = self.params["nb_colors"]
         self.visualizer_update_period_ms_ = self.params["visualization_update_period_ms"]  
         self.colors = distinctipy.get_colors(self.nb_colors)
         self.pose_graph_subscriber = self.node.create_subscription(
-            PoseGraph, '/viz/pose_graph', self.pose_graph_callback, 10)
+            PoseGraph, '/cslam/viz/pose_graph', self.pose_graph_callback, 10)
         self.robot_pose_graphs = {}
         self.robot_pose_graphs_edges = {}
         self.origin_robot_ids = {}

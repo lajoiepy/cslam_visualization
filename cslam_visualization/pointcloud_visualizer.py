@@ -24,10 +24,10 @@ class PointCloudVisualizer():
         self.params = params
         self.pose_graph_viz = pose_graph_viz
         self.markers_publisher = self.node.create_publisher(
-            Marker, "/viz/cloudmarker", 10)
+            Marker, "/cslam/viz/cloudmarker", 10)
         self.visualizer_update_period_ms_ = self.params["visualization_update_period_ms"]  
         self.pointclouds_subscriber = self.node.create_subscription(
-            VizPointCloud, '/viz/keyframe_pointcloud', self.pointclouds_callback, 10)
+            VizPointCloud, '/cslam/viz/keyframe_pointcloud', self.pointclouds_callback, 10)
         self.pointclouds = {}
         self.timer = self.node.create_timer(
             self.visualizer_update_period_ms_ / 1000.0,
