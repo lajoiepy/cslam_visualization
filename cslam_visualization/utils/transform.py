@@ -25,8 +25,6 @@ from geometry_msgs.msg import Transform as TransformMsg
 ###############################################################################
 # Description d'une transformation
 ###############################################################################
-
-
 class Transform:
     # self.matrix = None  # matrix de transfo
 
@@ -43,7 +41,10 @@ class Transform:
                 npquat = quaternion.quaternion(quat[0], quat[1],
                                                quat[2], quat[3])
                 self.matrix[:3, :3] = quaternion.as_rotation_matrix(npquat)
-                self.matrix[:3, 3] = pos
+                if len(pos) == 3:
+                    self.matrix[3, 0] = pos[0]
+                    self.matrix[3, 1] = pos[1]
+                    self.matrix[3, 2] = pos[2]
         else:
             self.matrix = np.copy(mat)
 

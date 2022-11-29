@@ -39,6 +39,12 @@ class PointCloudVisualizer():
         self.pointclouds_keys_published = set()
         self.tf_broadcaster = TransformBroadcaster(self.node)
 
+        self.rotation_to_sensor_frame = Transform(quat=[1, 0, 0, 0], pos=[0, 0, 0])
+        if self.params["rotation_to_sensor_frame"] is not None:
+            self.rotation_to_sensor_frame = Transform(quat=self.params["rotation_to_sensor_frame"], pos=self.rotation_to_sensor_frame.position())
+            self.node.get_logger().info("rotation_to_sensor_frame: {} ".format(self.params["rotation_to_sensor_frame"]))
+
+
     def pointclouds_callback(self, msg):
         if msg.robot_id not in self.pointclouds:
             self.pointclouds[msg.robot_id] = []
@@ -79,9 +85,9 @@ class PointCloudVisualizer():
         marker.header.stamp = pointcloud.header.stamp
         marker.type = Marker.CUBE_LIST #Marker.POINTS
         marker.action = Marker.ADD
-        marker.scale.x = 0.2#self.params["voxel_size"]
-        marker.scale.y = 0.2#self.params["voxel_size"]
-        marker.scale.z = 0.2#self.params["voxel_size"]
+        marker.scale.x = self.params["voxel_size"]
+        marker.scale.y = self.params["voxel_size"]
+        marker.scale.z = self.params["voxel_size"]
 
         for point in read_points(pointcloud, skip_nans=True):
             pt = Point()
@@ -126,6 +132,7 @@ class PointCloudVisualizer():
                             tf_to_publish.header.stamp = rclpy.time.Time().to_msg()
                             tf_to_publish.child_frame_id = "robot" + str(robot_id) + "_keyframe" + str(pcl.keyframe_id)
                             t = self.pose_to_transform(self.pose_graph_viz.robot_pose_graphs[robot_id][pcl.keyframe_id].pose)
+                            t = t * self.rotation_to_sensor_frame
                             tf_to_publish.transform = t.to_msg()
 
                             pcl.pointcloud.header.stamp = tf_to_publish.header.stamp
@@ -145,6 +152,5 @@ class PointCloudVisualizer():
             self.markers_publisher.publish(pc)
         for tf in self.tfs_to_publish:
             self.tf_broadcaster.sendTransform(tf)
-        # TODO: add option or not?
         self.markers_to_publish = []
         
