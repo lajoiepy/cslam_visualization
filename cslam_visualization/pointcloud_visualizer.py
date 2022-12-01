@@ -13,7 +13,7 @@ from sensor_msgs.msg import PointCloud2
 from distinctipy import distinctipy
 import copy
 from tf2_ros import TransformBroadcaster
-from cslam.utils.point_cloud2 import read_points
+from cslam.utils.point_cloud2 import read_points, read_points_numpy_filtered
 from struct import pack, unpack
 import open3d
 
@@ -78,32 +78,84 @@ class PointCloudVisualizer():
         color.a = 1.0
         return color
 
+    # def pointcloud_to_marker(self, robot_id, keyframe_id, pointcloud):
+    #     """Converts a pointcloud to a marker"""
+    #     marker = Marker()
+    #     marker.header.frame_id = pointcloud.header.frame_id
+    #     marker.header.stamp = pointcloud.header.stamp
+    #     marker.type = Marker.SPHERE_LIST #Marker.POINTS
+    #     marker.action = Marker.ADD
+    #     marker.scale.x = self.params["voxel_size"] / 4
+    #     marker.scale.y = self.params["voxel_size"] / 4
+    #     marker.scale.z = self.params["voxel_size"] / 4
+
+    #     for point in read_points(pointcloud, skip_nans=True):
+    #         pt = Point()
+    #         pt.x = float(point[0])
+    #         pt.y = float(point[1])
+    #         pt.z = float(point[2])
+    #         marker.points.append(pt)
+    #         if len(point) == 4:
+    #             marker.colors.append(self.rgb_value_to_color(point[3]))
+    #         else:
+    #             marker.colors.append(self.get_robot_color(robot_id))
+    #     marker.frame_locked = True
+    #     marker.ns = "keypoints_robot" + str(robot_id)
+    #     marker.id = keyframe_id
+    #     return marker                      
+
     def pointcloud_to_marker(self, robot_id, keyframe_id, pointcloud):
         """Converts a pointcloud to a marker"""
         marker = Marker()
         marker.header.frame_id = pointcloud.header.frame_id
         marker.header.stamp = pointcloud.header.stamp
-        marker.type = Marker.CUBE_LIST #Marker.POINTS
+        marker.type = Marker.TRIANGLE_LIST #Marker.POINTS
         marker.action = Marker.ADD
-        marker.scale.x = self.params["voxel_size"]
-        marker.scale.y = self.params["voxel_size"]
-        marker.scale.z = self.params["voxel_size"]
+        marker.scale.x = 1.0
+        marker.scale.y = 1.0
+        marker.scale.z = 1.0
 
+        points = []
+        colors = []
         for point in read_points(pointcloud, skip_nans=True):
             pt = Point()
             pt.x = float(point[0])
             pt.y = float(point[1])
             pt.z = float(point[2])
-            marker.points.append(pt)
+            points.append(pt)
             if len(point) == 4:
-                marker.colors.append(self.rgb_value_to_color(point[3]))
+                colors.append(self.rgb_value_to_color(point[3]))
             else:
-                marker.colors.append(self.get_robot_color(robot_id))
+                colors.append(self.get_robot_color(robot_id))
+
+        pcd = open3d.geometry.PointCloud()
+        np_points = read_points_numpy_filtered(pointcloud, skip_nans=True)
+        pcd.points = open3d.utility.Vector3dVector(np_points)
+        # Create Triangle Mesh
+        pcd.estimate_normals()
+        ball_radius = self.params["voxel_size"]
+        mesh = open3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, open3d.utility.DoubleVector([ball_radius, ball_radius + ball_radius / 10, ball_radius  + ball_radius / 5]))
+        
+        mesh.compute_vertex_normals()
+        mesh.filter_smooth_taubin(number_of_iterations=10)
+
+        mesh.remove_degenerate_triangles()
+        mesh.remove_duplicated_triangles()
+
+        for triangle in mesh.triangles:
+            for i in range(3):
+                pt = Point()
+                vertex = mesh.vertices[triangle[i]]
+                pt.x = float(vertex[0])
+                pt.y = float(vertex[1])
+                pt.z = float(vertex[2])
+                marker.points.append(pt)
+                marker.colors.append(colors[triangle[i]])
+        
         marker.frame_locked = True
         marker.ns = "keypoints_robot" + str(robot_id)
         marker.id = keyframe_id
-        return marker                      
-
+        return marker 
 
     def check_exists_or_new(self, robot_id, keyframe_id):
         if robot_id not in self.previous_poses:

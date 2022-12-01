@@ -18,7 +18,8 @@ if __name__ == '__main__':
                         ('enable_keypoints_visualization', False),
                         ('enable_pointclouds_visualization', False),
                         ('voxel_size', 0.5),
-                        ('rotation_to_sensor_frame', None)])
+                        ('rotation_to_sensor_frame', None),
+                        ('pose_graph_markers_size', 0.1)])
     params = {}
     params['nb_colors'] = node.get_parameter(
         'nb_colors').value
@@ -32,6 +33,8 @@ if __name__ == '__main__':
         'voxel_size').value
     params['rotation_to_sensor_frame'] = node.get_parameter(
         'rotation_to_sensor_frame').value
+    params['pose_graph_markers_size'] = node.get_parameter(
+        'pose_graph_markers_size').value
     pose_graph_viz = PoseGraphVisualizer(node, params)
     keypoints_viz = []
     if params['enable_keypoints_visualization']:

@@ -47,9 +47,9 @@ class PoseGraphVisualizer():
             marker.id = robot_id
             marker.type = Marker.SPHERE_LIST
             marker.action = Marker.ADD
-            marker.scale.x = 1.0
-            marker.scale.y = 1.0
-            marker.scale.z = 1.0
+            marker.scale.x = self.params["pose_graph_markers_size"]
+            marker.scale.y = self.params["pose_graph_markers_size"]
+            marker.scale.z = self.params["pose_graph_markers_size"]
             marker.color.r = color[0]
             marker.color.g = color[1]
             marker.color.b = color[2]
@@ -69,7 +69,7 @@ class PoseGraphVisualizer():
             marker.id = robot_id
             marker.type = Marker.LINE_LIST
             marker.action = Marker.ADD
-            marker.scale.x = 0.5
+            marker.scale.x = self.params["pose_graph_markers_size"] / 2
             marker.color.r = color[0]
             marker.color.g = color[1]
             marker.color.b = color[2]

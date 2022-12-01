@@ -50,52 +50,32 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz_default_plugins/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        odom:
-          Value: true
-        r0_color_frame:
-          Value: true
-        r0_color_optical_frame:
-          Value: true
-        r0_depth_frame:
-          Value: true
-        r0_depth_optical_frame:
-          Value: true
-        r0_link:
-          Value: true
-        robot0_current_pose:
-          Value: true
-        robot0_latest_optimized_pose:
-          Value: true
-        robot0_map:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        robot0_map:
-          robot0_latest_optimized_pose:
-            robot0_current_pose:
-              {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Class: rviz_default_plugins/MarkerArray
-      Enabled: false
+      Enabled: true
       Name: MarkerArray
       Namespaces:
-        {}
+        edges: true
+        poses: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep All
         Reliability Policy: Reliable
-        Value: /viz/pose_graph_markers
-      Value: false
+        Value: /cslam/viz/pose_graph_markers
+      Value: true
     - Class: rviz_default_plugins/Marker
       Enabled: true
       Name: Marker
@@ -106,7 +86,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /viz/cloudmarker
+        Value: /cslam/viz/cloudmarker
       Value: true
   Enabled: true
   Global Options:
@@ -151,7 +131,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 3.67962384223938
+      Distance: 5.169606685638428
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -166,10 +146,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.32479676604270935
+      Pitch: 0.38979673385620117
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.910959482192993
+      Yaw: 2.7609596252441406
     Saved:
       - Class: rviz_default_plugins/Orbit
         Distance: 1176.14990234375
