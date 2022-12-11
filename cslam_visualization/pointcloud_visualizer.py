@@ -78,33 +78,33 @@ class PointCloudVisualizer():
         color.a = 1.0
         return color
 
-    # def pointcloud_to_marker(self, robot_id, keyframe_id, pointcloud):
-    #     """Converts a pointcloud to a marker"""
-    #     marker = Marker()
-    #     marker.header.frame_id = pointcloud.header.frame_id
-    #     marker.header.stamp = pointcloud.header.stamp
-    #     marker.type = Marker.SPHERE_LIST #Marker.POINTS
-    #     marker.action = Marker.ADD
-    #     marker.scale.x = self.params["voxel_size"]
-    #     marker.scale.y = self.params["voxel_size"]
-    #     marker.scale.z = self.params["voxel_size"]
-
-    #     for point in read_points(pointcloud, skip_nans=True):
-    #         pt = Point()
-    #         pt.x = float(point[0])
-    #         pt.y = float(point[1])
-    #         pt.z = float(point[2])
-    #         marker.points.append(pt)
-    #         if len(point) == 4:
-    #             marker.colors.append(self.rgb_value_to_color(point[3]))
-    #         else:
-    #             marker.colors.append(self.get_robot_color(robot_id))
-    #     marker.frame_locked = True
-    #     marker.ns = "keypoints_robot" + str(robot_id)
-    #     marker.id = keyframe_id
-    #     return marker                      
-
     def pointcloud_to_marker(self, robot_id, keyframe_id, pointcloud):
+        """Converts a pointcloud to a marker"""
+        marker = Marker()
+        marker.header.frame_id = pointcloud.header.frame_id
+        marker.header.stamp = pointcloud.header.stamp
+        marker.type = Marker.SPHERE_LIST #Marker.POINTS
+        marker.action = Marker.ADD
+        marker.scale.x = self.params["voxel_size"]
+        marker.scale.y = self.params["voxel_size"]
+        marker.scale.z = self.params["voxel_size"]
+
+        for point in read_points(pointcloud, skip_nans=True):
+            pt = Point()
+            pt.x = float(point[0])
+            pt.y = float(point[1])
+            pt.z = float(point[2])
+            marker.points.append(pt)
+            if len(point) == 4:
+                marker.colors.append(self.rgb_value_to_color(point[3]))
+            else:
+                marker.colors.append(self.get_robot_color(robot_id))
+        marker.frame_locked = True
+        marker.ns = "keypoints_robot" + str(robot_id)
+        marker.id = keyframe_id
+        return marker                      
+
+    def pointcloud_to_mesh_marker(self, robot_id, keyframe_id, pointcloud):
         """Converts a pointcloud to a marker"""
         marker = Marker()
         marker.header.frame_id = pointcloud.header.frame_id
@@ -191,7 +191,12 @@ class PointCloudVisualizer():
 
                             pcl.pointcloud.header.stamp = tf_to_publish.header.stamp
                             pcl.pointcloud.header.frame_id = tf_to_publish.child_frame_id
-                            marker = self.pointcloud_to_marker(robot_id, pcl.keyframe_id, pcl.pointcloud)
+
+                            marker = Marker()
+                            if self.params["produce_mesh"]:
+                                marker = self.pointcloud_to_mesh_marker(robot_id, pcl.keyframe_id, pcl.pointcloud)
+                            else:
+                                marker = self.pointcloud_to_marker(robot_id, pcl.keyframe_id, pcl.pointcloud)
 
                             self.markers_to_publish.append(marker)
                             self.tfs_to_publish.append(tf_to_publish)
@@ -200,7 +205,7 @@ class PointCloudVisualizer():
 
     def visualization_callback(self):
         self.keyframe_pointcloud_to_pose_pointcloud()
-        self.node.get_logger().info("Publishing " + str(len(self.markers_to_publish)) + " pointclouds")
+        self.node.get_logger().info("Publishing " + str(len(self.markers_to_publish)) + " pointclouds.")
         for pc in self.markers_to_publish:
             self.pointclouds_keys_published.add((pc.ns, pc.id))
             self.markers_publisher.publish(pc)

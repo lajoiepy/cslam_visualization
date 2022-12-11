@@ -99,3 +99,4 @@ class Keypoints3DVisualizer():
     def visualization_callback(self):
         marker_array = self.keypoints_to_marker_array()
         self.keypoints_markers_publisher.publish(marker_array)
+        self.node.get_logger().info("Publish {} markers".format(len(marker_array.markers)))

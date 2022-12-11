@@ -41,10 +41,11 @@ class Transform:
                 npquat = quaternion.quaternion(quat[0], quat[1],
                                                quat[2], quat[3])
                 self.matrix[:3, :3] = quaternion.as_rotation_matrix(npquat)
+                assert(len(pos) == 3)
                 if len(pos) == 3:
-                    self.matrix[3, 0] = pos[0]
-                    self.matrix[3, 1] = pos[1]
-                    self.matrix[3, 2] = pos[2]
+                    self.matrix[0, 3] = pos[0]
+                    self.matrix[1, 3] = pos[1]
+                    self.matrix[2, 3] = pos[2]
         else:
             self.matrix = np.copy(mat)
 

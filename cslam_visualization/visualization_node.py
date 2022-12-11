@@ -17,6 +17,7 @@ if __name__ == '__main__':
                         ('visualization_update_period_ms', 100),
                         ('enable_keypoints_visualization', False),
                         ('enable_pointclouds_visualization', False),
+                        ('produce_mesh', False),
                         ('voxel_size', 0.5),
                         ('rotation_to_sensor_frame', None),
                         ('pose_graph_markers_size', 0.1)])
@@ -35,6 +36,8 @@ if __name__ == '__main__':
         'rotation_to_sensor_frame').value
     params['pose_graph_markers_size'] = node.get_parameter(
         'pose_graph_markers_size').value
+    params['produce_mesh'] = node.get_parameter(
+        'produce_mesh').value
     pose_graph_viz = PoseGraphVisualizer(node, params)
     keypoints_viz = []
     if params['enable_keypoints_visualization']:
