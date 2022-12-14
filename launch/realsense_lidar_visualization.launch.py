@@ -45,7 +45,7 @@ def generate_launch_description():
                                   'config/'),
                               description=''),
         DeclareLaunchArgument('config_file',
-                              default_value='realsense.yaml',
+                              default_value='realsense_lidar.yaml',
                               description=''),
         DeclareLaunchArgument('config',
                               default_value=[

@@ -5,6 +5,6 @@
     enable_keypoints_visualization: false
     enable_pointclouds_visualization: true
     voxel_size: 0.1
-    rotation_to_sensor_frame: [0.5, -0.5, 0.5, -0.5]
+    rotation_to_sensor_frame: [0.5, -0.5, -0.5, 0.5] # x,y,z,w
     pose_graph_markers_size: 0.1
     produce_mesh: true
