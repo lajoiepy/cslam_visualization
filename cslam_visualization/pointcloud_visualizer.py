@@ -135,10 +135,10 @@ class PointCloudVisualizer():
         pcd.estimate_normals()
         pcd.orient_normals_towards_camera_location()
         ball_radius = self.params["voxel_size"]
-        mesh = open3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, open3d.utility.DoubleVector([ball_radius, ball_radius + ball_radius/ 5, ball_radius  + ball_radius/ 10]))
+        mesh = open3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, open3d.utility.DoubleVector([ball_radius, ball_radius*2, ball_radius*4]))
         
         # mesh = mesh.compute_vertex_normals()
-        mesh = mesh.filter_smooth_taubin(number_of_iterations=1)
+        mesh = mesh.filter_smooth_taubin(number_of_iterations=10)
         # mesh = mesh.simplify_vertex_clustering(self.params["voxel_size"])
 
         mesh.remove_degenerate_triangles()

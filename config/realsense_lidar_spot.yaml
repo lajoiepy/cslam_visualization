@@ -1,0 +1,10 @@
+/**:
+  ros__parameters:
+    nb_colors: 10
+    visualization_update_period_ms: 5000
+    enable_keypoints_visualization: false
+    enable_pointclouds_visualization: true
+    voxel_size: 0.1
+    rotation_to_sensor_frame: [0.5, -0.5, -0.5, 0.5] # w,x,y,z
+    pose_graph_markers_size: 0.1
+    produce_mesh: true
