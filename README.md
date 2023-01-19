@@ -1,4 +1,4 @@
-Online visualization tool for Swarm-SLAM
+Online visualization tool for [Swarm-SLAM](https://github.com/MISTLab/Swarm-SLAM)
 
 # Installation
 - Build the visualization tool in a ROS 2 workspace with `colcon build`.
