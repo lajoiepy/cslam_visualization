@@ -11,7 +11,7 @@ ROS_DOMAIN_ID=100 ros2 launch cslam_visualization realsense_visualization.launch
 zenoh-bridge-dds -d 100 --allow /cslam/.*
 ```
 
-# Run Swarm-SLAM on the robots realsense example
+# Run Swarm-SLAM on the robots (Realsense D400 example)
 ```
 ROS_DOMAIN_ID=$ROBOT_ID ros2 launch cslam_experiments experiment_realsense.launch.py robot_id:=$ROBOT_ID
 zenoh-bridge-dds -d $ROBOT_ID --allow /cslam/.*
