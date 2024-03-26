@@ -19,7 +19,7 @@ if __name__ == '__main__':
                         ('enable_pointclouds_visualization', False),
                         ('produce_mesh', False),
                         ('voxel_size', 0.5),
-                        ('rotation_to_sensor_frame', [0.5, -0.5, 0.5, -0.5]),
+                        ('rotation_to_sensor_frame', [1.0, 0.0, 0.0, 0.0]),
                         ('pose_graph_markers_size', 0.1)])
     params = {}
     params['nb_colors'] = node.get_parameter(
