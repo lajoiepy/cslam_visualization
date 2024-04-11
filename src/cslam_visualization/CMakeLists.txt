@@ -43,7 +43,6 @@ find_package(pcl_conversions REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(class_loader REQUIRED)
 find_package(image_geometry REQUIRED)
-find_package(rtabmap_ros 0.20.18 REQUIRED)
 
 find_package(RTABMap 0.20.18 REQUIRED)
 
@@ -78,7 +77,6 @@ find_package(PCL 1.7
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${RTABMap_INCLUDE_DIRS}
-  ${rtabmap_ros_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
   ${GTSAM_INCLUDE_DIR}
 )
@@ -109,7 +107,6 @@ SET(Libraries
    pcl_msgs
    perception_pcl
    RTABMap
-   rtabmap_ros
 )
 
 find_package(cslam_common_interfaces REQUIRED)

@@ -1,19 +1,15 @@
-Online visualization tool for [Swarm-SLAM](https://github.com/MISTLab/Swarm-SLAM)
+# Swarm-SLAM visualization
 
-# Installation
-- Build the visualization tool in a ROS 2 workspace with `colcon build`.
-- Install the [Zenoh ROS 2 DDS bridge](https://github.com/eclipse-zenoh/zenoh-plugin-ros2ddss) for ROS 2 to avoid flooding the network with discovery messages and unwanted communication.
-- If you don't want to use Zenoh, run the following commands without the `ROS_DOMAIN_ID`
-
-# Run the visualization station
+In first terminal:
 ```
-export ROS_DOMAIN_ID=100 
-ros2 launch cslam_visualization visualization_lidar.launch.py
+sudo apt install python3-vcstool
+git clone https://github.com/lajoiepy/cslam_visualization.git
+cd cslam_visualization
+vcs import src < swarmslam_visualization.repos
+cd docker/
+make build
+make run
+make attach
+colcon build
+ros2 launch your_visualization_launch_file.py
 ```
-# Run Zenoh
-```
-export ROS_DOMAIN_ID=100 
-zenoh-bridge-ros2dds
-```
-
-Then run Swarm-SLAM on the robots.

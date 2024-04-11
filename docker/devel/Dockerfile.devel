@@ -1,0 +1,26 @@
+FROM ros:humble-perception
+
+RUN apt-get update
+RUN apt-get install python3-pip python3-vcstool -y
+
+# Install dependecies
+COPY requirements.txt /tmp/
+RUN pip install -r /tmp/requirements.txt
+
+RUN apt-get install ros-$ROS_DISTRO-rviz2 -y
+RUN git clone https://github.com/lajoiepy/cslam_visualization.git viz_ws
+RUN cd viz_ws && git checkout rerun_support && vcs import src < swarmslam_visualization.repos
+RUN cd viz_ws &&\
+    rosdep update &&\
+    rosdep install --from-paths src -y --ignore-src --rosdistro $ROS_DISTRO
+RUN rm -r viz_ws
+
+# Visualization lib
+RUN pip install rerun-sdk
+# RUN apt-get install libgtk-3-dev libxkbcommon-x11-0
+# ENV WGPU_BACKEND gl
+
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+RUN echo "source /cslam_visualization/install/setup.bash" >> ~/.bashrc
+
+WORKDIR /cslam_visualization
