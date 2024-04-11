@@ -1,6 +1,13 @@
 # Swarm-SLAM visualization
 
-In first terminal:
+You first will need to install Rerun: https://www.rerun.io/
+
+Then in one terminal, execute:
+```
+rerun
+```
+
+In second terminal, execute:
 ```
 sudo apt install python3-vcstool
 git clone https://github.com/lajoiepy/cslam_visualization.git
@@ -13,3 +20,5 @@ make attach
 colcon build
 ros2 launch your_visualization_launch_file.py
 ```
+
+Then launch the Swarm-SLAM stack normally, and you should see the map appear in Rerun!
