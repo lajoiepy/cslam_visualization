@@ -15,17 +15,9 @@ def launch_setup(context, *args, **kwargs):
                                executable='visualization_node.py',
                                name='cslam_visualization',
                                parameters=[LaunchConfiguration('config')])
-    print(LaunchConfiguration('rviz_config').perform(context))
-    rviz_node = Node(package='rviz2',
-            namespace='',
-            executable='rviz2',
-            name='rviz2',
-            arguments=['-d', LaunchConfiguration('rviz_config').perform(context)],
-        )
     
     return [
         visualization_node,
-        rviz_node,
     ]
 
 
@@ -40,19 +32,10 @@ def generate_launch_description():
         DeclareLaunchArgument('config_file',
                               default_value='lidar.yaml',
                               description=''),
-        DeclareLaunchArgument('rviz_config_file',
-                              default_value='lidar.rviz',
-                              description=''),
         DeclareLaunchArgument('config',
                               default_value=[
                                   LaunchConfiguration('config_path'),
                                   LaunchConfiguration('config_file')
-                              ],
-                              description=''),
-        DeclareLaunchArgument('rviz_config',
-                              default_value=[
-                                  LaunchConfiguration('config_path'),
-                                  LaunchConfiguration('rviz_config_file')
                               ],
                               description=''),
         OpaqueFunction(function=launch_setup)

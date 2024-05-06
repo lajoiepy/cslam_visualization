@@ -10,6 +10,16 @@ import copy
 import open3d
 import rerun as rr
 from numpy.lib.recfunctions import structured_to_unstructured
+import matplotlib
+
+# currently need to calculate the color manually
+# see https://github.com/rerun-io/rerun/issues/4409
+# TODO: add option
+cmap = matplotlib.colormaps["viridis"]
+norm = matplotlib.colors.Normalize(
+    vmin=-5.0,
+    vmax=20.0,
+)
 
 class PointCloudVisualizer():
 
@@ -66,7 +76,9 @@ class PointCloudVisualizer():
 
                 rr.set_time_seconds("stable_time", self.viz_counter)
 
-                rr.log("global_map/robot_" + str(robot_id) + "_map/poses/pose_" + str(pcl.keyframe_id) + "/points", rr.Points3D(pts)) # Fix color scheme
+                pts_colors = cmap(norm(pts[:, 2]))
+
+                rr.log("global_map/robot_" + str(robot_id) + "_map/poses/pose_" + str(pcl.keyframe_id) + "/points", rr.Points3D(pts, colors=pts_colors)) # Fix color scheme
 
                 self.previous_poses = copy.deepcopy(self.pose_graph_viz.robot_pose_graphs)
                 self.pointclouds[robot_id].remove(pcl)
