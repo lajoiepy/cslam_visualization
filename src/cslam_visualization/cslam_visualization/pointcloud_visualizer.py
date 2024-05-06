@@ -7,7 +7,7 @@ from sensor_msgs.msg import PointCloud2
 from sensor_msgs_py import point_cloud2
 from distinctipy import distinctipy
 import copy
-import open3d
+import open3d as o3d
 import rerun as rr
 from numpy.lib.recfunctions import structured_to_unstructured
 import matplotlib
@@ -76,9 +76,37 @@ class PointCloudVisualizer():
 
                 rr.set_time_seconds("stable_time", self.viz_counter)
 
+                pcd = o3d.geometry.PointCloud()
+                pcd.points = o3d.utility.Vector3dVector(pts)
+                pcd = pcd.voxel_down_sample(voxel_size=self.params['voxel_size'])
+
+                pts = np.asarray(pcd.points)
                 pts_colors = cmap(norm(pts[:, 2]))
 
                 rr.log("global_map/robot_" + str(robot_id) + "_map/poses/pose_" + str(pcl.keyframe_id) + "/points", rr.Points3D(pts, colors=pts_colors)) # Fix color scheme
+
+                # Estimate normals
+                # pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+                # # Optionally, orient normals to be consistent (assuming the point cloud is oriented)
+                # pcd.orient_normals_consistent_tangent_plane(k=10)
+                # poisson_mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=16)[0]
+                
+                
+                # vertices = np.asarray(poisson_mesh.vertices)
+                # faces = np.asarray(poisson_mesh.triangles)
+
+                # # Assuming vertex normals and colors are also needed
+                # normals = np.asarray(poisson_mesh.vertex_normals)
+                # colors = np.full(vertices.shape, [0, 255, 0])  # example: coloring all vertices green
+
+                # # Create Mesh3D object
+                # mesh = rr.Mesh3D(
+                #     vertex_positions=vertices,
+                #     vertex_normals=normals,
+                #     vertex_colors=colors,
+                #     indices=faces.flatten()
+                # )
+                # rr.log("global_map/robot_" + str(robot_id) + "_map/poses/pose_" + str(pcl.keyframe_id) + "/points", mesh)
 
                 self.previous_poses = copy.deepcopy(self.pose_graph_viz.robot_pose_graphs)
                 self.pointclouds[robot_id].remove(pcl)

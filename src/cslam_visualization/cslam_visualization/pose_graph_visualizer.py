@@ -46,9 +46,11 @@ class PoseGraphVisualizer():
             linestrips_points = []
             for _, node in pose_graph.items():
                 linestrips_points.append([node.pose.position.x, node.pose.position.y, node.pose.position.z])
+                tf = rr.Transform3D(translation=[node.pose.position.x, node.pose.position.y, node.pose.position.z], rotation=rr.Quaternion(xyzw = [node.pose.orientation.x, node.pose.orientation.y, node.pose.orientation.z, node.pose.orientation.w]))
+                # TODO: downsample the poses
                 rr.log(
                     "global_map/robot_" + str(robot_id) + "_map/poses/pose_" + str(node.key.keyframe_id),
-                    rr.Transform3D(translation=[node.pose.position.x, node.pose.position.y, node.pose.position.z], rotation=rr.Quaternion(xyzw = [node.pose.orientation.x, node.pose.orientation.y, node.pose.orientation.z, node.pose.orientation.w])),
+                    tf,
                 )
 
             # Rerun
