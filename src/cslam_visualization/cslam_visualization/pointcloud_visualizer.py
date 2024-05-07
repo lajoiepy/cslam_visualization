@@ -15,11 +15,11 @@ import time
 
 # currently need to calculate the color manually
 # see https://github.com/rerun-io/rerun/issues/4409
-# TODO: add option
+# TODO: add option and parameters
 #cmap = matplotlib.colormaps["viridis"]
 norm = matplotlib.colors.Normalize(
-    vmin=-5.0,
-    vmax=20.0,
+    vmin=0.0,
+    vmax=15.0,
 )
 
 class PointCloudVisualizer():
@@ -90,6 +90,50 @@ class PointCloudVisualizer():
                 pts_colors = cmap(norm(pts[:, 2]))
                 
                 rr.log("global_map/robot_" + str(robot_id) + "_map/poses/pose_" + str(pcl.keyframe_id) + "/points", rr.Points3D(pts, colors=pts_colors)) 
+
+                # self.node.get_logger().info("Creating mesh for robot " + str(robot_id) + " keyframe " + str(pcl.keyframe_id))
+                # t0 = time.time()
+                # # Create Triangle Mesh
+                # pcd.estimate_normals()
+                # self.node.get_logger().info("Normals estimated in " + str(time.time() - t0) + " seconds")
+                # t0 = time.time()
+                # #pcd.orient_normals_towards_camera_location()
+                # self.node.get_logger().info("Normals oriented in " + str(time.time() - t0) + " seconds")
+                # t0 = time.time()
+                # ball_radius = self.params["voxel_size"]
+                # mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector([ball_radius, ball_radius*2, ball_radius*4]))
+                # self.node.get_logger().info("Mesh created from ball pivoting in " + str(time.time() - t0) + " seconds")
+                # t0 = time.time()
+                # mesh = mesh.compute_vertex_normals()
+                # mesh = mesh.filter_smooth_taubin(number_of_iterations=10)
+                # # mesh = mesh.simplify_vertex_clustering(self.params["voxel_size"])
+                # self.node.get_logger().info("Mesh smoothed in " + str(time.time() - t0) + " seconds")
+                # t0 = time.time()
+
+                # mesh.remove_degenerate_triangles()
+                # mesh.remove_duplicated_triangles()
+                # self.node.get_logger().info("Mesh cleaned in " + str(time.time() - t0) + " seconds")
+                # t0 = time.time()
+
+                # vertex_positions = np.asarray(mesh.vertices).astype(np.float32)
+                # self.node.get_logger().info(f"vertex_positions {vertex_positions.shape}")
+                # vertex_normals = np.asarray(mesh.vertex_normals).astype(np.float32)
+                # self.node.get_logger().info(f"vertex_normals {vertex_normals}")
+                # vertex_colors = np.array(pts_colors, dtype=np.float32)  # RGB colors
+                # self.node.get_logger().info(f"vertex_colors {vertex_colors}")
+                # self.node.get_logger().info("Mesh created in " + str(time.time() - t0) + " seconds")
+                # t0 = time.time()
+
+                # rr.log(
+                #     "global_map/robot_" + str(robot_id) + "_map/poses/pose_" + str(pcl.keyframe_id) + "/points",
+                #     rr.Mesh3D(
+                #         vertex_positions=vertex_positions,
+                #         vertex_normals=vertex_normals,
+                #         vertex_colors=vertex_colors,
+                #     ),
+                # )
+                # self.node.get_logger().info("Mesh logged in " + str(time.time() - t0) + " seconds")
+
 
                 self.previous_poses = copy.deepcopy(self.pose_graph_viz.robot_pose_graphs)
                 self.pointclouds[robot_id].remove(pcl)
