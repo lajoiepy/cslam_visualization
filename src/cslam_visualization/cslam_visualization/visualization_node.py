@@ -7,37 +7,29 @@ from cslam_visualization.pose_graph_visualizer import PoseGraphVisualizer
 from cslam_visualization.keypoints3d_visualizer import Keypoints3DVisualizer
 from cslam_visualization.pointcloud_visualizer import PointCloudVisualizer
 
+def extract_params(node, initial_params):
+    params = {}
+    for param in initial_params:
+        params[param[0]] = node.get_parameter(param[0]).value
+    return params
+
 if __name__ == '__main__':
 
     rclpy.init(args=None)
     node = Node('visualizer')
-    node.declare_parameters(
-            namespace='',
-            parameters=[('nb_colors', 10),
+    initial_params = [('nb_colors', 10),
                         ('visualization_update_period_ms', 100),
                         ('enable_keypoints_visualization', False),
                         ('enable_pointclouds_visualization', False),
                         ('produce_mesh', False),
                         ('voxel_size', 0.5),
                         ('rotation_to_sensor_frame', [1.0, 0.0, 0.0, 0.0]),
-                        ('pose_graph_markers_size', 0.1)])
-    params = {}
-    params['nb_colors'] = node.get_parameter(
-        'nb_colors').value
-    params['visualization_update_period_ms'] = node.get_parameter(
-        'visualization_update_period_ms').value
-    params['enable_keypoints_visualization'] = node.get_parameter(
-        'enable_keypoints_visualization').value
-    params['enable_pointclouds_visualization'] = node.get_parameter(
-        'enable_pointclouds_visualization').value
-    params['voxel_size'] = node.get_parameter(
-        'voxel_size').value
-    params['rotation_to_sensor_frame'] = node.get_parameter(
-        'rotation_to_sensor_frame').value
-    params['pose_graph_markers_size'] = node.get_parameter(
-        'pose_graph_markers_size').value
-    params['produce_mesh'] = node.get_parameter(
-        'produce_mesh').value
+                        ('pose_graph_markers_size', 0.1),
+                        ('pose_graph_subsampling_factor', 1)]
+    node.declare_parameters(
+            namespace='',
+            parameters=initial_params)
+    params = extract_params(node, initial_params) 
     pose_graph_viz = PoseGraphVisualizer(node, params)
     keypoints_viz = []
     if params['enable_keypoints_visualization']:

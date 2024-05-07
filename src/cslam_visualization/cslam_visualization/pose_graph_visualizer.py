@@ -14,11 +14,11 @@ class PoseGraphVisualizer():
         self.params = params
         self.nb_colors = self.params["nb_colors"]
         self.visualizer_update_period_ms_ = self.params["visualization_update_period_ms"]  
-        self.colors = distinctipy.get_colors(self.nb_colors)
+        self.colors = distinctipy.get_colors(self.nb_colors, colorblind_type="Deuteranomaly")
         self.pose_graph_subscriber = self.node.create_subscription(
             PoseGraph, '/cslam/viz/pose_graph', self.pose_graph_callback, 10)
         self.robot_pose_graphs = {}
-        self.robot_pose_graphs_edges = {}
+        # self.robot_pose_graphs_edges = {}
         self.origin_robot_ids = {}
         self.timer = self.node.create_timer(
             self.visualizer_update_period_ms_ / 1000.0,
@@ -35,8 +35,10 @@ class PoseGraphVisualizer():
             self.robot_pose_graphs[msg.robot_id] = {}
 
         for pose in msg.values:
+            if pose.key.keyframe_id % self.params["pose_graph_subsampling_factor"] != 0:
+                continue
             self.robot_pose_graphs[msg.robot_id][pose.key.keyframe_id] = pose
-        self.robot_pose_graphs_edges[msg.robot_id] = msg.edges
+        # self.robot_pose_graphs_edges[msg.robot_id] = msg.edges
 
     def robot_pose_graphs_to_rerun(self):
         """Converts a PoseGraph messages to a MarkerArray message"""            

@@ -1,9 +1,10 @@
 /**:
   ros__parameters:
-    nb_colors: 10
+    voxel_size: 10.0
+    pose_graph_subsampling_factor: 10
     visualization_update_period_ms: 1000
     enable_keypoints_visualization: false
     enable_pointclouds_visualization: true
-    voxel_size: 3.0
     pose_graph_markers_size: 1.0
     produce_mesh: false
+    nb_colors: 10
