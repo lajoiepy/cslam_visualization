@@ -1,3 +1,5 @@
+### Checkout `rerun_viz` branch for new/better Rerun based visualization
+
 Online visualization tool for [Swarm-SLAM](https://github.com/MISTLab/Swarm-SLAM)
 
 # Installation
