@@ -12,8 +12,9 @@ In second terminal, execute:
 sudo apt install python3-vcstool
 git clone https://github.com/lajoiepy/cslam_visualization.git
 cd cslam_visualization
+git checkout rerun_viz
 vcs import src < swarmslam_visualization.repos
-cd docker/
+cd docker/devel/
 make build
 make run
 make attach
