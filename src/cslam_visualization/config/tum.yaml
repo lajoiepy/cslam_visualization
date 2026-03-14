@@ -10,6 +10,8 @@
     rotation_to_sensor_frame: [0.5, -0.5, 0.5, -0.5]
     pose_graph_markers_size: 0.05
     produce_mesh: false
+    mesh_voxel_size: 0.04    # Voxel size for mesh reconstruction (smaller = finer mesh)
+    mesh_poisson_depth: 8    # Poisson depth (higher = finer mesh, slower)
     use_real_colors: true
     enable_result_saving: true
     save_dir: "/tmp/cslam_results"

@@ -23,6 +23,8 @@ if __name__ == '__main__':
                         ('enable_pointclouds_visualization', False),
                         ('produce_mesh', False),
                         ('voxel_size', 0.5),
+                        ('mesh_voxel_size', 0.05),
+                        ('mesh_poisson_depth', 8),
                         ('rotation_to_sensor_frame', [1.0, 0.0, 0.0, 0.0]),
                         ('pose_graph_markers_size', 0.1),
                         ('pose_graph_subsampling_factor', 1),
@@ -44,6 +46,10 @@ if __name__ == '__main__':
     pointcloud_viz = []
     if params['enable_pointclouds_visualization']:
         pointcloud_viz = PointCloudVisualizer(node, params, pose_graph_viz)
+    mesh_viz = []
+    if params['produce_mesh']:
+        from cslam_visualization.mesh_visualizer import MeshVisualizer
+        mesh_viz = MeshVisualizer(node, params, pose_graph_viz)
     result_saver = []
     if params['enable_result_saving']:
         result_saver = ResultSaver(node, params, pose_graph_viz)
