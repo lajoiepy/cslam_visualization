@@ -1,0 +1,21 @@
+/**:
+  ros__parameters:
+    nb_colors: 10
+    visualization_update_period_ms: 2000
+    enable_keypoints_visualization: false
+    enable_pointclouds_visualization: true
+    voxel_size: 0.05
+    # Quaternion (w, x, y, z) rotating the optical frame (z-forward, x-right, y-down)
+    # to a viewer-friendly orientation.  Same convention as the realsense config.
+    rotation_to_sensor_frame: [0.5, -0.5, 0.5, -0.5]
+    pose_graph_markers_size: 0.05
+    produce_mesh: false
+    use_real_colors: true
+    enable_result_saving: true
+    save_dir: "/tmp/cslam_results"
+    max_nb_robots: 3
+    gt_paths:
+      - "/home/lajoiepy/Documents/projects/Swarm-SLAM-dev/test-data/rgbd/rgbd_dataset_freiburg1_room/groundtruth.txt"
+      - "/home/lajoiepy/Documents/projects/Swarm-SLAM-dev/test-data/rgbd/rgbd_dataset_freiburg1_room/groundtruth.txt"
+      - "/home/lajoiepy/Documents/projects/Swarm-SLAM-dev/test-data/rgbd/rgbd_dataset_freiburg1_room/groundtruth.txt"
+    save_period_sec: 30.0

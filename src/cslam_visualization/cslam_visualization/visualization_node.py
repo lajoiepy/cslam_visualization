@@ -2,10 +2,10 @@
 import rclpy
 from rclpy.node import Node
 
-from cslam_common_interfaces.msg import PoseGraph
+from cslam_common_interfaces.msg import PoseGraph, InterRobotLoopClosure
 from cslam_visualization.pose_graph_visualizer import PoseGraphVisualizer
-from cslam_visualization.keypoints3d_visualizer import Keypoints3DVisualizer
 from cslam_visualization.pointcloud_visualizer import PointCloudVisualizer
+from cslam_visualization.result_saver import ResultSaver
 
 def extract_params(node, initial_params):
     params = {}
@@ -25,7 +25,13 @@ if __name__ == '__main__':
                         ('voxel_size', 0.5),
                         ('rotation_to_sensor_frame', [1.0, 0.0, 0.0, 0.0]),
                         ('pose_graph_markers_size', 0.1),
-                        ('pose_graph_subsampling_factor', 1)]
+                        ('pose_graph_subsampling_factor', 1),
+                        ('use_real_colors', False),
+                        ('enable_result_saving', False),
+                        ('save_dir', '/tmp/cslam_results'),
+                        ('max_nb_robots', 3),
+                        ('gt_paths', ['', '', '']),
+                        ('save_period_sec', 30.0)]
     node.declare_parameters(
             namespace='',
             parameters=initial_params)
@@ -33,10 +39,25 @@ if __name__ == '__main__':
     pose_graph_viz = PoseGraphVisualizer(node, params)
     keypoints_viz = []
     if params['enable_keypoints_visualization']:
+        from cslam_visualization.keypoints3d_visualizer import Keypoints3DVisualizer
         keypoints_viz = Keypoints3DVisualizer(node, params, pose_graph_viz)
     pointcloud_viz = []
     if params['enable_pointclouds_visualization']:
         pointcloud_viz = PointCloudVisualizer(node, params, pose_graph_viz)
+    result_saver = []
+    if params['enable_result_saving']:
+        result_saver = ResultSaver(node, params, pose_graph_viz)
+    def inter_robot_lc_callback(msg):
+        status = "SUCCESS" if msg.success else "FAILED"
+        node.get_logger().info(
+            f"[Inter-robot LC] {status} — "
+            f"r{msg.robot0_id}/kf{msg.robot0_keyframe_id} <-> "
+            f"r{msg.robot1_id}/kf{msg.robot1_keyframe_id}")
+    node.create_subscription(
+        InterRobotLoopClosure,
+        '/cslam/inter_robot_loop_closure',
+        inter_robot_lc_callback, 1000)
+
     node.get_logger().info('Initialization done.')
     rclpy.spin(node)
     rclpy.shutdown()

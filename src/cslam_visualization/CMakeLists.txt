@@ -44,8 +44,6 @@ find_package(message_filters REQUIRED)
 find_package(class_loader REQUIRED)
 find_package(image_geometry REQUIRED)
 
-find_package(RTABMap 0.20.18 REQUIRED)
-
 # Find GTSAM
 find_package(GTSAM CONFIG REQUIRED)
 
@@ -76,7 +74,6 @@ find_package(PCL 1.7
 # include_directories(include)
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
-  ${RTABMap_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
   ${GTSAM_INCLUDE_DIR}
 )
@@ -106,7 +103,6 @@ SET(Libraries
    pcl_ros
    pcl_msgs
    perception_pcl
-   RTABMap
 )
 
 find_package(cslam_common_interfaces REQUIRED)

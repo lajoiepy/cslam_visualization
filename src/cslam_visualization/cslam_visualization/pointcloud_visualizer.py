@@ -1,26 +1,18 @@
-import rclpy
-from rclpy.node import Node
-import numpy as np
-
-from cslam_common_interfaces.msg import VizPointCloud
-from sensor_msgs.msg import PointCloud2
-from sensor_msgs_py import point_cloud2
-from distinctipy import distinctipy
 import copy
+
+import numpy as np
 import open3d as o3d
 import rerun as rr
-from numpy.lib.recfunctions import structured_to_unstructured
 import matplotlib
-import time
+import matplotlib.colors
 
-# currently need to calculate the color manually
-# see https://github.com/rerun-io/rerun/issues/4409
-# TODO: add option and parameters
-#cmap = matplotlib.colormaps["viridis"]
-norm = matplotlib.colors.Normalize(
-    vmin=0.0,
-    vmax=15.0,
-)
+import rclpy
+from cslam_common_interfaces.msg import VizPointCloud
+from sensor_msgs_py import point_cloud2
+from distinctipy import distinctipy
+
+norm = matplotlib.colors.Normalize(vmin=0.0, vmax=15.0)
+
 
 class PointCloudVisualizer():
 
@@ -28,7 +20,9 @@ class PointCloudVisualizer():
         self.node = node
         self.params = params
         self.pose_graph_viz = pose_graph_viz
-        self.visualizer_update_period_ms_ = self.params["visualization_update_period_ms"]  
+        self.visualizer_update_period_ms_ = self.params["visualization_update_period_ms"]
+        self.use_real_colors = self.params.get("use_real_colors", False)
+
         self.pointclouds_subscriber = self.node.create_subscription(
             VizPointCloud, '/cslam/viz/keyframe_pointcloud', self.pointclouds_callback, 10)
         self.pointclouds = {}
@@ -39,18 +33,18 @@ class PointCloudVisualizer():
         self.previous_poses = {}
         self.pointclouds_keys_published = set()
 
-        self.viz_counter = 0.0 # TODO: To get correct logging timestamps, use timestamp from PoseGraph message instead of counter
+        self.viz_counter = 0.0
 
         colors = distinctipy.get_colors(self.params["nb_colors"], colorblind_type="Deuteranomaly")
         self.colormaps = {}
         for i in range(self.params["nb_colors"]):
-            self.colormaps[i] = matplotlib.colors.LinearSegmentedColormap.from_list("cmap"+str(i), [colors[i], 'white'], N=256)
-
+            self.colormaps[i] = matplotlib.colors.LinearSegmentedColormap.from_list(
+                "cmap" + str(i), [colors[i], 'white'], N=256)
 
     def pointclouds_callback(self, msg):
         if msg.robot_id not in self.pointclouds:
             self.pointclouds[msg.robot_id] = []
-        self.pointclouds[msg.robot_id].append(msg)      
+        self.pointclouds[msg.robot_id].append(msg)
 
     def check_exists_or_new(self, robot_id, keyframe_id):
         if robot_id not in self.previous_poses:
@@ -61,83 +55,82 @@ class PointCloudVisualizer():
             return True
         new = self.pose_graph_viz.robot_pose_graphs[robot_id][keyframe_id].pose.position
         previous = self.previous_poses[robot_id][keyframe_id].pose.position
-        dist = np.linalg.norm([new.x-previous.x, new.y-previous.y, new.z-previous.z])
-        if dist > 1e-1:
-            return True
-        return False
+        dist = np.linalg.norm([new.x - previous.x, new.y - previous.y, new.z - previous.z])
+        return dist > 1e-1
+
+    @staticmethod
+    def _unpack_pcl_rgb(pts_struct):
+        """Unpack PCL's packed-float32 RGB into an (N, 3) uint8 array (R, G, B)."""
+        # PCL packs color as a float32 whose bytes are [B, G, R, 0] (little-endian).
+        # .copy() is required before .view() because structured-array fields may be
+        # non-contiguous, which makes .view() raise a ValueError.
+        rgb_bytes = pts_struct["rgb"].copy().view(np.uint8).reshape(-1, 4)
+        return rgb_bytes[:, [2, 1, 0]]  # → R, G, B
 
     def keyframe_pointcloud_to_pose_pointcloud(self):
-        """Offsets the pointclouds to the robot poses"""
-        # Nodes (poses)
-        for robot_id, sensor_data in self.pointclouds.items():
+        """Place keyframe point clouds at their optimised poses."""
+        for robot_id, sensor_data in list(self.pointclouds.items()):
             if robot_id not in self.pose_graph_viz.robot_pose_graphs:
                 continue
-            for pcl in sensor_data:
-                if not self.check_exists_or_new(robot_id, pcl.keyframe_id):
-                    continue
-                if pcl.keyframe_id not in self.pose_graph_viz.robot_pose_graphs[robot_id]:  
-                    continue                      
-                
-                pts = point_cloud2.read_points(pcl.pointcloud, field_names=["x", "y", "z"], skip_nans=True)
-                pts = structured_to_unstructured(pts)
-                
-                rr.set_time_seconds("stable_time", self.viz_counter)
-                pcd = o3d.geometry.PointCloud()
-                pcd.points = o3d.utility.Vector3dVector(pts)
-                pcd = pcd.voxel_down_sample(voxel_size=self.params['voxel_size'])
-                pts = np.asarray(pcd.points)
-                cmap = self.colormaps[robot_id % self.params["nb_colors"]]
-                pts_colors = cmap(norm(pts[:, 2]))
-                
-                rr.log("global_map/robot_" + str(robot_id) + "_map/poses/pose_" + str(pcl.keyframe_id) + "/points", rr.Points3D(pts, colors=pts_colors)) 
 
-                # self.node.get_logger().info("Creating mesh for robot " + str(robot_id) + " keyframe " + str(pcl.keyframe_id))
-                # t0 = time.time()
-                # # Create Triangle Mesh
-                # pcd.estimate_normals()
-                # self.node.get_logger().info("Normals estimated in " + str(time.time() - t0) + " seconds")
-                # t0 = time.time()
-                # #pcd.orient_normals_towards_camera_location()
-                # self.node.get_logger().info("Normals oriented in " + str(time.time() - t0) + " seconds")
-                # t0 = time.time()
-                # ball_radius = self.params["voxel_size"]
-                # mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector([ball_radius, ball_radius*2, ball_radius*4]))
-                # self.node.get_logger().info("Mesh created from ball pivoting in " + str(time.time() - t0) + " seconds")
-                # t0 = time.time()
-                # mesh = mesh.compute_vertex_normals()
-                # mesh = mesh.filter_smooth_taubin(number_of_iterations=10)
-                # # mesh = mesh.simplify_vertex_clustering(self.params["voxel_size"])
-                # self.node.get_logger().info("Mesh smoothed in " + str(time.time() - t0) + " seconds")
-                # t0 = time.time()
+            # Iterate over a copy so we can safely remove processed items.
+            for pcl in list(sensor_data):
+                try:
+                    if not self.check_exists_or_new(robot_id, pcl.keyframe_id):
+                        continue
+                    if pcl.keyframe_id not in self.pose_graph_viz.robot_pose_graphs[robot_id]:
+                        continue
 
-                # mesh.remove_degenerate_triangles()
-                # mesh.remove_duplicated_triangles()
-                # self.node.get_logger().info("Mesh cleaned in " + str(time.time() - t0) + " seconds")
-                # t0 = time.time()
+                    # Read XYZ (and RGB if available).
+                    has_rgb = any(f.name == "rgb" for f in pcl.pointcloud.fields)
+                    if has_rgb:
+                        field_names = ["x", "y", "z", "rgb"]
+                    else:
+                        field_names = ["x", "y", "z"]
+                    pts_struct = point_cloud2.read_points(
+                        pcl.pointcloud, field_names=field_names, skip_nans=True)
+                    xyz = np.column_stack(
+                        [np.array(pts_struct["x"]), np.array(pts_struct["y"]), np.array(pts_struct["z"])]).astype(np.float64)
 
-                # vertex_positions = np.asarray(mesh.vertices).astype(np.float32)
-                # self.node.get_logger().info(f"vertex_positions {vertex_positions.shape}")
-                # vertex_normals = np.asarray(mesh.vertex_normals).astype(np.float32)
-                # self.node.get_logger().info(f"vertex_normals {vertex_normals}")
-                # vertex_colors = np.array(pts_colors, dtype=np.float32)  # RGB colors
-                # self.node.get_logger().info(f"vertex_colors {vertex_colors}")
-                # self.node.get_logger().info("Mesh created in " + str(time.time() - t0) + " seconds")
-                # t0 = time.time()
+                    if xyz.shape[0] == 0:
+                        sensor_data.remove(pcl)
+                        self.pointclouds_keys_published.add((robot_id, pcl.keyframe_id))
+                        continue
 
-                # rr.log(
-                #     "global_map/robot_" + str(robot_id) + "_map/poses/pose_" + str(pcl.keyframe_id) + "/points",
-                #     rr.Mesh3D(
-                #         vertex_positions=vertex_positions,
-                #         vertex_normals=vertex_normals,
-                #         vertex_colors=vertex_colors,
-                #     ),
-                # )
-                # self.node.get_logger().info("Mesh logged in " + str(time.time() - t0) + " seconds")
+                    rr.set_time("stable_time", sequence=int(self.viz_counter))
+                    path = ("global_map/robot_" + str(robot_id) +
+                            "_map/poses/pose_" + str(pcl.keyframe_id))
 
+                    # --- Depth-coloured view (robot colour + depth gradient) ---
+                    pcd = o3d.geometry.PointCloud()
+                    pcd.points = o3d.utility.Vector3dVector(xyz)
+                    pcd = pcd.voxel_down_sample(voxel_size=self.params['voxel_size'])
+                    pts_d = np.asarray(pcd.points)
+                    cmap = self.colormaps[robot_id % self.params["nb_colors"]]
+                    depth_colors = cmap(norm(pts_d[:, 2]))
+                    rr.log(path + "/points", rr.Points3D(pts_d, colors=depth_colors))
 
-                self.previous_poses = copy.deepcopy(self.pose_graph_viz.robot_pose_graphs)
-                self.pointclouds[robot_id].remove(pcl)
-                self.pointclouds_keys_published.add((robot_id, pcl.keyframe_id))
+                    # --- Real-colour view ---
+                    if self.use_real_colors and has_rgb:
+                        try:
+                            real_rgb = self._unpack_pcl_rgb(pts_struct)  # (N, 3) uint8
+                            pcd_c = o3d.geometry.PointCloud()
+                            pcd_c.points = o3d.utility.Vector3dVector(xyz)
+                            pcd_c.colors = o3d.utility.Vector3dVector(real_rgb / 255.0)
+                            pcd_c = pcd_c.voxel_down_sample(voxel_size=self.params['voxel_size'])
+                            pts_c = np.asarray(pcd_c.points)
+                            colors_c = (np.asarray(pcd_c.colors) * 255).astype(np.uint8)
+                            rr.log(path + "/points_rgb", rr.Points3D(pts_c, colors=colors_c))
+                        except Exception as e:
+                            self.node.get_logger().warn(
+                                f"PointCloudVisualizer: RGB unpack failed for robot {robot_id} kf {pcl.keyframe_id}: {e}")
+
+                    self.previous_poses = copy.deepcopy(self.pose_graph_viz.robot_pose_graphs)
+                    sensor_data.remove(pcl)
+                    self.pointclouds_keys_published.add((robot_id, pcl.keyframe_id))
+                except Exception as e:
+                    self.node.get_logger().warn(
+                        f"PointCloudVisualizer: processing failed for robot {robot_id} kf {pcl.keyframe_id}: {e}")
 
     def visualization_callback(self):
         self.keyframe_pointcloud_to_pose_pointcloud()
