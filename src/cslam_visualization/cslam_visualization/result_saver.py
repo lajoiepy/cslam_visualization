@@ -22,6 +22,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.colors
 
+import zenoh
+from rclpy.serialization import deserialize_message
 from sensor_msgs_py import point_cloud2
 from cslam_common_interfaces.msg import KeyframeOdom, VizPointCloud
 
@@ -104,7 +106,7 @@ def _unpack_pcl_rgb(pts_struct):
 
 class ResultSaver:
 
-    def __init__(self, node, params, pose_graph_viz):
+    def __init__(self, node, params, pose_graph_viz, zenoh_session):
         self.node = node
         self.params = params
         self.pose_graph_viz = pose_graph_viz
@@ -120,16 +122,30 @@ class ResultSaver:
         # (robot_id, keyframe_id) → (xyz Nx3 float32, colors Nx3 uint8 or None)
         self._cloud_cache = {}
 
-        for i in range(self.max_nb_robots):
-            self.node.create_subscription(
-                KeyframeOdom,
-                f"/r{i}/cslam/keyframe_odom",
-                self._make_kf_odom_cb(i), 10)
+        def _kf_odom_zenoh_cb(sample):
+            try:
+                # Key: cslam/{robot_id}/local/keyframe_odom
+                parts = str(sample.key_expr).split("/")
+                robot_id = int(parts[1])
+                msg = deserialize_message(bytes(sample.payload.to_bytes()), KeyframeOdom)
+                stamp = msg.odom.header.stamp
+                self.kf_timestamps.setdefault(robot_id, {})[msg.id] = (
+                    stamp.sec + stamp.nanosec * 1e-9)
+            except Exception as e:
+                self.node.get_logger().warn(f"ResultSaver: kf_odom error: {e}")
 
-        self.node.create_subscription(
-            VizPointCloud,
-            "/cslam/viz/keyframe_pointcloud",
-            self._pcl_cb, 10)
+        self._sub_kf_odom = zenoh_session.declare_subscriber(
+            "cslam/*/local/keyframe_odom", _kf_odom_zenoh_cb)
+
+        def _pcl_zenoh_cb(sample):
+            try:
+                msg = deserialize_message(bytes(sample.payload.to_bytes()), VizPointCloud)
+                self._pcl_cb(msg)
+            except Exception as e:
+                self.node.get_logger().warn(f"ResultSaver: pcl error: {e}")
+
+        self._sub_pcl = zenoh_session.declare_subscriber(
+            "cslam/*/viz/keyframe_pointcloud", _pcl_zenoh_cb)
 
         save_period = params.get("save_period_sec", 30.0)
         self.node.create_timer(save_period, self._save_cb)

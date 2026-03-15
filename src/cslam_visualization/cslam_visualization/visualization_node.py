@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
+from rclpy.serialization import deserialize_message
 
-from cslam_common_interfaces.msg import PoseGraph, InterRobotLoopClosure
+import zenoh
+
+from cslam_common_interfaces.msg import InterRobotLoopClosure
 from cslam_visualization.pose_graph_visualizer import PoseGraphVisualizer
 from cslam_visualization.pointcloud_visualizer import PointCloudVisualizer
 from cslam_visualization.result_saver import ResultSaver
@@ -37,33 +40,42 @@ if __name__ == '__main__':
     node.declare_parameters(
             namespace='',
             parameters=initial_params)
-    params = extract_params(node, initial_params) 
-    pose_graph_viz = PoseGraphVisualizer(node, params)
+    params = extract_params(node, initial_params)
+
+    zenoh_session = zenoh.open(zenoh.Config())
+
+    pose_graph_viz = PoseGraphVisualizer(node, params, zenoh_session)
     keypoints_viz = []
     if params['enable_keypoints_visualization']:
         from cslam_visualization.keypoints3d_visualizer import Keypoints3DVisualizer
         keypoints_viz = Keypoints3DVisualizer(node, params, pose_graph_viz)
     pointcloud_viz = []
     if params['enable_pointclouds_visualization']:
-        pointcloud_viz = PointCloudVisualizer(node, params, pose_graph_viz)
+        pointcloud_viz = PointCloudVisualizer(node, params, pose_graph_viz, zenoh_session)
     mesh_viz = []
     if params['produce_mesh']:
         from cslam_visualization.mesh_visualizer import MeshVisualizer
         mesh_viz = MeshVisualizer(node, params, pose_graph_viz)
     result_saver = []
     if params['enable_result_saving']:
-        result_saver = ResultSaver(node, params, pose_graph_viz)
-    def inter_robot_lc_callback(msg):
-        status = "SUCCESS" if msg.success else "FAILED"
-        node.get_logger().info(
-            f"[Inter-robot LC] {status} — "
-            f"r{msg.robot0_id}/kf{msg.robot0_keyframe_id} <-> "
-            f"r{msg.robot1_id}/kf{msg.robot1_keyframe_id}")
-    node.create_subscription(
-        InterRobotLoopClosure,
-        '/cslam/inter_robot_loop_closure',
-        inter_robot_lc_callback, 1000)
+        result_saver = ResultSaver(node, params, pose_graph_viz, zenoh_session)
+
+    def _inter_robot_lc_cb(sample):
+        try:
+            msg = deserialize_message(
+                bytes(sample.payload.to_bytes()), InterRobotLoopClosure)
+            status = "SUCCESS" if msg.success else "FAILED"
+            node.get_logger().info(
+                f"[Inter-robot LC] {status} — "
+                f"r{msg.robot0_id}/kf{msg.robot0_keyframe_id} <-> "
+                f"r{msg.robot1_id}/kf{msg.robot1_keyframe_id}")
+        except Exception as e:
+            node.get_logger().warn(f"inter_robot_lc deserialize error: {e}")
+
+    _sub_lc = zenoh_session.declare_subscriber(
+        "cslam/*/inter_robot_loop_closure", _inter_robot_lc_cb)
 
     node.get_logger().info('Initialization done.')
     rclpy.spin(node)
+    zenoh_session.close()
     rclpy.shutdown()

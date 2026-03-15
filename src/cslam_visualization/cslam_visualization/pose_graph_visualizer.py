@@ -1,6 +1,6 @@
-import rclpy
-from rclpy.node import Node
-from rclpy.time import Duration, Time
+import zenoh
+from rclpy.serialization import deserialize_message
+from rosidl_runtime_py.utilities import get_message
 
 from cslam_common_interfaces.msg import PoseGraph
 from distinctipy import distinctipy
@@ -9,19 +9,27 @@ import rerun as rr
 
 class PoseGraphVisualizer():
 
-    def __init__(self, node, params):
+    def __init__(self, node, params, zenoh_session):
         self.node = node
         self.params = params
         self.nb_colors = self.params["nb_colors"]
         self.visualizer_update_period_ms_ = self.params["visualization_update_period_ms"]
         self.colors = distinctipy.get_colors(self.nb_colors, colorblind_type="Deuteranomaly")
-        self.pose_graph_subscriber = self.node.create_subscription(
-            PoseGraph, '/cslam/viz/pose_graph', self.pose_graph_callback, 10)
         self.robot_pose_graphs = {}
         self.origin_robot_ids = {}
         self.timer = self.node.create_timer(
             self.visualizer_update_period_ms_ / 1000.0,
             self.visualization_callback)
+
+        def _pose_graph_cb(sample):
+            try:
+                msg = deserialize_message(bytes(sample.payload.to_bytes()), PoseGraph)
+                self.pose_graph_callback(msg)
+            except Exception as e:
+                self.node.get_logger().warn(f"PoseGraphVisualizer: deserialize error: {e}")
+
+        self._sub_pose_graph = zenoh_session.declare_subscriber(
+            "cslam/*/viz/pose_graph", _pose_graph_cb)
 
         rr.init("cslam_visualization")
         rr.spawn(connect=True)
