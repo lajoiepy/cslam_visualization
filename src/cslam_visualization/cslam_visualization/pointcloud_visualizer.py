@@ -1,7 +1,6 @@
 import copy
 
 import numpy as np
-import open3d as o3d
 import rerun as rr
 import matplotlib
 import matplotlib.colors
@@ -111,25 +110,15 @@ class PointCloudVisualizer():
                             "_map/poses/pose_" + str(pcl.keyframe_id))
 
                     # --- Depth-coloured view (robot colour + depth gradient) ---
-                    pcd = o3d.geometry.PointCloud()
-                    pcd.points = o3d.utility.Vector3dVector(xyz)
-                    pcd = pcd.voxel_down_sample(voxel_size=self.params['voxel_size'])
-                    pts_d = np.asarray(pcd.points)
                     cmap = self.colormaps[robot_id % self.params["nb_colors"]]
-                    depth_colors = cmap(norm(pts_d[:, 2]))
-                    rr.log(path + "/points", rr.Points3D(pts_d, colors=depth_colors))
+                    depth_colors = cmap(norm(xyz[:, 2]))
+                    rr.log(path + "/points", rr.Points3D(xyz, colors=depth_colors))
 
                     # --- Real-colour view ---
                     if self.use_real_colors and has_rgb:
                         try:
                             real_rgb = self._unpack_pcl_rgb(pts_struct)  # (N, 3) uint8
-                            pcd_c = o3d.geometry.PointCloud()
-                            pcd_c.points = o3d.utility.Vector3dVector(xyz)
-                            pcd_c.colors = o3d.utility.Vector3dVector(real_rgb / 255.0)
-                            pcd_c = pcd_c.voxel_down_sample(voxel_size=self.params['voxel_size'])
-                            pts_c = np.asarray(pcd_c.points)
-                            colors_c = (np.asarray(pcd_c.colors) * 255).astype(np.uint8)
-                            rr.log(path + "/points_rgb", rr.Points3D(pts_c, colors=colors_c))
+                            rr.log(path + "/points_rgb", rr.Points3D(xyz, colors=real_rgb))
                         except Exception as e:
                             self.node.get_logger().warn(
                                 f"PointCloudVisualizer: RGB unpack failed for robot {robot_id} kf {pcl.keyframe_id}: {e}")
